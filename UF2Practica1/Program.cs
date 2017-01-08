@@ -12,7 +12,6 @@ namespace UF2Practica1
 		//Valors constants
 		#region Constants
 		const int nCaixeres = 3;
-
 		#endregion
 		/* Cua concurrent
 		 	Dos mètodes bàsics: 
@@ -56,13 +55,21 @@ namespace UF2Practica1
 			clock.Start();
 
 
-			// Instanciar les caixeres i afegir el thread creat a la llista de threads
+            // Instanciar les caixeres i afegir el thread creat a la llista de threads
+
+
+            for (int i = 1; i <= nCaixeres; i++)
+            {
+                var c = new Caixera() { idCaixera=i};
+                var fil = new Thread(() => c.ProcessarCua());
+                fil.Start();
+                threads.Add(fil);
+            }
 
 
 
-
-			// Procediment per esperar que acabin tots els threads abans d'acabar
-			foreach (Thread thread in threads)
+            // Procediment per esperar que acabin tots els threads abans d'acabar
+            foreach (Thread thread in threads)
 				thread.Join();
 
 			// Parem el rellotge i mostrem el temps que triga
@@ -82,17 +89,25 @@ namespace UF2Practica1
 			set;
 		}
 
-		public void ProcessarCua()
-		{
-			// Llegirem la cua extreient l'element
-			// cridem al mètode ProcesarCompra passant-li el client
+
+        public void ProcessarCua()
+        {
+            // Llegirem la cua extreient l'element
+            // cridem al mètode ProcesarCompra passant-li el client
+
+            Client c = null;
+            while (!MainClass.cua.IsEmpty)
+            {
+                bool success = MainClass.cua.TryDequeue(out c);
+                if (success)
+                {
+                    ProcesarCompra(c);
+                }
+            }
+        }
 
 
-
-		}
-
-
-		private void ProcesarCompra(Client client)
+        private void ProcesarCompra(Client client)
 		{
 
 			Console.WriteLine("La caixera " + this.idCaixera + " comença amb el client " + client.nom + " que té " + client.carretCompra + " productes");
@@ -120,7 +135,7 @@ namespace UF2Practica1
 
 	public class Client
 	{
-		public string nom
+        		public string nom
 		{
 			get;
 			set;
